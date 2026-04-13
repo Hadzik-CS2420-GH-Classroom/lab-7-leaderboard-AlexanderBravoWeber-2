@@ -119,10 +119,9 @@ BinarySearchTree::Node* BinarySearchTree::insert_(Node* node, int value)
 //
 bool BinarySearchTree::remove(int value)
 {
-    // Your code here
-	bool removed = false;
-	root_ = remove_(root_, value, removed);
-    return removed; // placeholder
+    bool removed = false;
+    root_ = remove_(root_, value, removed);
+    return removed;
 }
 
 // ---------------------------------------------------------------------------
@@ -164,24 +163,20 @@ BinarySearchTree::Node* BinarySearchTree::remove_(Node* node, int value,
     else {
         removed = true;
 
-        // Case 1: no children
         if (!node->left && !node->right) {
             delete node;
             return nullptr;
         }
-        // Case 2: one right child
         else if (!node->left) {
             Node* temp = node->right;
             delete node;
             return temp;
         }
-        // Case 2: one left child
         else if (!node->right) {
             Node* temp = node->left;
             delete node;
             return temp;
         }
-        // Case 3: two children
         else {
             Node* successor = find_min_(node->right);
             node->data = successor->data;
