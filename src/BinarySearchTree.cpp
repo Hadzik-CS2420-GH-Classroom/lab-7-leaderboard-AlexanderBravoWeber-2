@@ -153,41 +153,41 @@ bool BinarySearchTree::remove(int value)
 BinarySearchTree::Node* BinarySearchTree::remove_(Node* node, int value,
                                                    bool& removed)
 {
-    if (!node) {
-        return nullptr; // value not found
-	}
+    if (!node) return nullptr; // Step 0: base case
 
-	if (value < node->data) {
+    // I like adding debug prints helps when things break lol.
+
+    if (value < node->data) {
         node->left = remove_(node->left, value, removed);
     }
     else if (value > node->data) {
         node->right = remove_(node->right, value, removed);
     }
-    else { // value == node->data → found the node to remove
+    else {
         removed = true;
-        // Case 1: No children
+        std::cout << "remove_: found node with value " << node->data << " to remove" << std::endl;
+        // Case 1: leaf
         if (!node->left && !node->right) {
             delete node;
             return nullptr;
         }
-        // Case 2: One child
-        if (!node->left) { // only right child
+        else if (!node->left) {
             Node* temp = node->right;
             delete node;
             return temp;
         }
-        if (!node->right) { // only left child
+        else if (!node->right) {
             Node* temp = node->left;
             delete node;
             return temp;
         }
-        // Case 3: Two children
-        Node* successor = find_min_(node->right); // find in-order successor
-        node->data = successor->data;              // copy successor's data
-        bool dummy_removed = false;                // dummy bool for recursive call
-        node->right = remove_(node->right, successor->data, dummy_removed); // remove successor
+        else {
+            Node* successor = find_min_(node->right);
+            std::cout << "remove_: in-order successor is " << successor->data << std::endl;
+            node->data = successor->data;
+            node->right = remove_(node->right, successor->data, removed);
+        }
     }
-
     return node; // placeholder — replace this with your implementation
 }
 
