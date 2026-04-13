@@ -19,7 +19,8 @@
 //
 BinarySearchTree::BinarySearchTree()
 {
-    // Your code here
+	root_ = nullptr;
+
 }
 
 // ---------------------------------------------------------------------------
@@ -32,7 +33,27 @@ BinarySearchTree::BinarySearchTree()
 //
 BinarySearchTree::~BinarySearchTree()
 {
-    // Your code here
+	clear_(root_);
+}
+
+void BinarySearchTree::clear()
+{
+    if (!root_){ clear_(root_); }
+    root_ = nullptr;
+	
+
+}
+
+void BinarySearchTree::clear_(Node* node)
+{
+    if (!node) {
+        return; // base case: nothing to clear
+	}
+	else if (node->left || node->right) {
+        clear_(node->left);  // clear left subtree
+        clear_(node->right); // clear right subtree
+    }
+    delete node; // delete current node
 }
 
 // =============================================================================
@@ -51,7 +72,8 @@ BinarySearchTree::~BinarySearchTree()
 //
 void BinarySearchTree::insert(int value)
 {
-    // Your code here
+	root_ = insert_(root_, value);
+
 }
 
 // ---------------------------------------------------------------------------
@@ -69,10 +91,20 @@ void BinarySearchTree::insert(int value)
 //
 BinarySearchTree::Node* BinarySearchTree::insert_(Node* node, int value)
 {
-    // Your code here
+    if (!node) {
+        return new Node(value);
+    }
 
-    return node; // placeholder — replace this with your implementation
+    if (value < node->data) {
+        node->left = insert_(node->left, value);
+    }
+    else if (value > node->data) {
+        node->right = insert_(node->right, value);
+    }
+
+    return node;
 }
+
 
 // ---------------------------------------------------------------------------
 // remove
@@ -88,8 +120,9 @@ BinarySearchTree::Node* BinarySearchTree::insert_(Node* node, int value)
 bool BinarySearchTree::remove(int value)
 {
     // Your code here
-
-    return false; // placeholder
+	bool removed = false;
+	root_ = remove_(root_, value, removed);
+    return removed; // placeholder
 }
 
 // ---------------------------------------------------------------------------
@@ -120,7 +153,40 @@ bool BinarySearchTree::remove(int value)
 BinarySearchTree::Node* BinarySearchTree::remove_(Node* node, int value,
                                                    bool& removed)
 {
-    // Your code here
+    if (!node) {
+        return nullptr; // value not found
+	}
+
+	if (value < node->data) {
+        node->left = remove_(node->left, value, removed);
+    }
+    else if (value > node->data) {
+        node->right = remove_(node->right, value, removed);
+    }
+    else { // value == node->data → found the node to remove
+        removed = true;
+        // Case 1: No children
+        if (!node->left && !node->right) {
+            delete node;
+            return nullptr;
+        }
+        // Case 2: One child
+        if (!node->left) { // only right child
+            Node* temp = node->right;
+            delete node;
+            return temp;
+        }
+        if (!node->right) { // only left child
+            Node* temp = node->left;
+            delete node;
+            return temp;
+        }
+        // Case 3: Two children
+        Node* successor = find_min_(node->right); // find in-order successor
+        node->data = successor->data;              // copy successor's data
+        bool dummy_removed = false;                // dummy bool for recursive call
+        node->right = remove_(node->right, successor->data, dummy_removed); // remove successor
+    }
 
     return node; // placeholder — replace this with your implementation
 }
@@ -138,8 +204,15 @@ BinarySearchTree::Node* BinarySearchTree::remove_(Node* node, int value,
 BinarySearchTree::Node* BinarySearchTree::find_min_(Node* node) const
 {
     // Your code here
-
-    return node; // placeholder — replace this with your implementation
+    if (!node) {
+        return nullptr; // should not happen if precondition is met
+	}
+	for (; node->left; node = node->left) {
+        // keep going left
+        if (!node->left) {
+			return node; // found the minimum
+		}
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -151,10 +224,7 @@ BinarySearchTree::Node* BinarySearchTree::find_min_(Node* node) const
 // Hint: call clear_(root_) to delete all nodes recursively, then set
 // root_ back to nullptr.
 //
-void BinarySearchTree::clear()
-{
-    // Your code here
-}
+
 
 // ---------------------------------------------------------------------------
 // clear_ (private recursive helper)
@@ -166,10 +236,7 @@ void BinarySearchTree::clear()
 // Post-order is important here: delete children before the parent so you
 // don't lose the child pointers.
 //
-void BinarySearchTree::clear_(Node* node)
-{
-    // Your code here
-}
+
 
 // =============================================================================
 // Queries
@@ -185,9 +252,8 @@ void BinarySearchTree::clear_(Node* node)
 //
 bool BinarySearchTree::search(int value) const
 {
-    // Your code here
+	return search_(root_, value); // placeholder
 
-    return false; // placeholder
 }
 
 // ---------------------------------------------------------------------------
@@ -203,9 +269,18 @@ bool BinarySearchTree::search(int value) const
 //
 bool BinarySearchTree::search_(Node* node, int value) const
 {
-    // Your code here
-
-    return false; // placeholder
+    if (!node) {
+        return false; // value not found
+    }
+	if (value == node->data) {
+        return true; // value found
+    }
+	if (value < node->data) {
+        return search_(node->left, value); // search left subtree
+    }
+    else {
+        return search_(node->right, value); // search right subtree
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -216,9 +291,13 @@ bool BinarySearchTree::search_(Node* node, int value) const
 //
 bool BinarySearchTree::is_empty() const
 {
-    // Your code here
+    if (!root_) {
+        return true; // tree is empty
+    }
+    else {
+        return false; // tree is not empty
+    }
 
-    return true; // placeholder
 }
 
 // ---------------------------------------------------------------------------
@@ -236,9 +315,8 @@ bool BinarySearchTree::is_empty() const
 //
 int BinarySearchTree::height() const
 {
-    // Your code here
+	return height_(root_); // placeholder
 
-    return -1; // placeholder
 }
 
 // ---------------------------------------------------------------------------
@@ -252,7 +330,10 @@ int BinarySearchTree::height() const
 //
 int BinarySearchTree::height_(Node* node) const
 {
-    // Your code here
+    if (!node) {
+        return -1; // base case: height of empty subtree is -1
+	}
+	return 1 + std::max(height_(node->left), height_(node->right)); // recursive case: 1 + max height of left and right subtrees
 
     return -1; // placeholder
 }
@@ -267,9 +348,8 @@ int BinarySearchTree::height_(Node* node) const
 //
 int BinarySearchTree::size() const
 {
-    // Your code here
-
-    return 0; // placeholder
+    return size_(root_);
+    
 }
 
 // ---------------------------------------------------------------------------
@@ -283,9 +363,14 @@ int BinarySearchTree::size() const
 //
 int BinarySearchTree::size_(Node* node) const
 {
-    // Your code here
+    
+    int count = 0;
 
-    return 0; // placeholder
+    if (node == nullptr) return 0;
+
+
+    return 1 + size_(node->left) + size_(node->right);
+
 }
 
 // ---------------------------------------------------------------------------
@@ -301,9 +386,8 @@ int BinarySearchTree::size_(Node* node) const
 //
 bool BinarySearchTree::is_balanced() const
 {
-    // Your code here
+    return is_balanced_(root_);
 
-    return true; // placeholder
 }
 
 // ---------------------------------------------------------------------------
@@ -320,9 +404,12 @@ bool BinarySearchTree::is_balanced() const
 //
 bool BinarySearchTree::is_balanced_(Node* node) const
 {
-    // Your code here
+    if (!root_) return true;
+	int height_left = height_(node->left);
+	int height_right = height_(node->right);
+	bool balanced = std::abs(height_left - height_right) <= 1; // check balance factor
 
-    return true; // placeholder
+    return balanced; // placeholder
 }
 
 // =============================================================================
@@ -339,7 +426,8 @@ bool BinarySearchTree::is_balanced_(Node* node) const
 //
 void BinarySearchTree::inorder() const
 {
-    // Your code here
+	inorder_(root_);
+	std::cout << std::endl; // print newline after traversal
 }
 
 // ---------------------------------------------------------------------------
@@ -352,7 +440,12 @@ void BinarySearchTree::inorder() const
 //
 void BinarySearchTree::inorder_(Node* node) const
 {
-    // Your code here
+    if (!node) {
+        return; // base case: nothing to print
+	}
+	inorder_(node->left);   // print left subtree
+	std::cout << node->data << ' '; // print current node
+	inorder_(node->right);  // print right subtree
 }
 
 // ---------------------------------------------------------------------------
@@ -365,7 +458,8 @@ void BinarySearchTree::inorder_(Node* node) const
 //
 void BinarySearchTree::preorder() const
 {
-    // Your code here
+	preorder_(root_);
+	std::cout << std::endl; // print newline after traversal
 }
 
 // ---------------------------------------------------------------------------
@@ -378,7 +472,11 @@ void BinarySearchTree::preorder() const
 //
 void BinarySearchTree::preorder_(Node* node) const
 {
-    // Your code here
+    if (!node)return;
+	std::cout << node->data << ' '; // print current node
+	preorder_(node->left);   // print left subtree
+    preorder_(node->right);
+
 }
 
 // ---------------------------------------------------------------------------
@@ -391,7 +489,8 @@ void BinarySearchTree::preorder_(Node* node) const
 //
 void BinarySearchTree::postorder() const
 {
-    // Your code here
+    postorder_(root_);
+	std::cout << std::endl; // print newline after traversal
 }
 
 // ---------------------------------------------------------------------------
@@ -403,6 +502,9 @@ void BinarySearchTree::postorder() const
 // Print node->data followed by a space.
 //
 void BinarySearchTree::postorder_(Node* node) const
-{
-    // Your code here
+{  
+    if (!node) return;
+	postorder_(node->left);   // print left subtree
+    postorder_(node->right);
+	std::cout << node->data << ' '; // print current 
 }
