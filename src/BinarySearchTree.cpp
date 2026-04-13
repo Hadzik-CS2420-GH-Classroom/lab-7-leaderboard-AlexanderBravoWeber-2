@@ -151,11 +151,9 @@ bool BinarySearchTree::remove(int value)
 // Always return node at the end so parent links stay intact.
 //
 BinarySearchTree::Node* BinarySearchTree::remove_(Node* node, int value,
-                                                   bool& removed)
+    bool& removed)
 {
-    if (!node) return nullptr; // Step 0: base case
-
-    // I like adding debug prints helps when things break lol.
+    if (!node) return nullptr;
 
     if (value < node->data) {
         node->left = remove_(node->left, value, removed);
@@ -165,30 +163,35 @@ BinarySearchTree::Node* BinarySearchTree::remove_(Node* node, int value,
     }
     else {
         removed = true;
-        std::cout << "remove_: found node with value " << node->data << " to remove" << std::endl;
-        // Case 1: leaf
+
+        // Case 1: no children
         if (!node->left && !node->right) {
             delete node;
             return nullptr;
         }
+        // Case 2: one right child
         else if (!node->left) {
             Node* temp = node->right;
             delete node;
             return temp;
         }
+        // Case 2: one left child
         else if (!node->right) {
             Node* temp = node->left;
             delete node;
             return temp;
         }
+        // Case 3: two children
         else {
             Node* successor = find_min_(node->right);
-            std::cout << "remove_: in-order successor is " << successor->data << std::endl;
             node->data = successor->data;
-            node->right = remove_(node->right, successor->data, removed);
+
+            bool dummy = false;
+            node->right = remove_(node->right, successor->data, dummy);
         }
     }
-    return node; // placeholder — replace this with your implementation
+
+    return node;
 }
 
 // ---------------------------------------------------------------------------
