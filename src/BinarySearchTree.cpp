@@ -31,18 +31,18 @@ BinarySearchTree::BinarySearchTree()
 //
 // Hint: call clear() — it already does the recursive cleanup.
 //
+
 BinarySearchTree::~BinarySearchTree()
 {
-	clear_(root_);
+    clear();
 }
 
 void BinarySearchTree::clear()
 {
-    if (!root_){ clear_(root_); }
+    clear_(root_);
     root_ = nullptr;
-	
-
 }
+
 
 void BinarySearchTree::clear_(Node* node)
 {
